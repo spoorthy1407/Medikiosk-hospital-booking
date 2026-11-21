@@ -1,0 +1,29 @@
+{# Tablet adherence card. Needs `adh` from services.adherence() #}
+<div class="card adh-card">
+  <div class="adh-head">
+    <div>
+      <h2>Tablet adherence <span class="muted small">(last {{ adh.days }} days)</span></h2>
+      <p class="muted small">Doses marked <b>Taken</b> ÷ all doses due. A dose not marked within 2 hours counts as missed.</p>
+    </div>
+    <div class="adh-score adh-{{ adh.rating|lower|replace(' ', '') }}">
+      <b>{{ adh.percent if adh.percent is not none else '–' }}{% if adh.percent is not none %}%{% endif %}</b>
+      <small>{{ adh.rating }}</small>
+    </div>
+  </div>
+  <div class="adh-stats">
+    <span class="badge badge-taken">{{ adh.taken }} taken</span>
+    <span class="badge badge-skipped">{{ adh.skipped }} skipped</span>
+    <span class="badge badge-missed">{{ adh.missed }} missed</span>
+  </div>
+  {% if adh.per_med %}
+  <ul class="adh-list">
+    {% for m in adh.per_med %}
+    <li>
+      <div class="adh-row"><span><b>{{ m.name }}</b> <span class="muted small">{{ m.dosage }}</span>{% if not m.active %} <span class="muted small">(paused)</span>{% endif %}</span>
+        <span class="small">{{ m.percent if m.percent is not none else '–' }}{% if m.percent is not none %}%{% endif %} · {{ m.taken }}/{{ m.expected }}</span></div>
+      <div class="bar"><span class="bar-fill adh-{{ m.rating|lower|replace(' ', '') }}" style="width: {{ m.percent or 0 }}%"></span></div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="muted">No medicines yet.</p>{% endif %}
+</div>

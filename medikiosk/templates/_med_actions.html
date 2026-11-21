@@ -1,0 +1,20 @@
+<div class="actions">
+  <span class="badge badge-{{ r.status|lower }}">{{ r.status }}{% if r.status == 'Snoozed' %} until {{ r.snooze_until }}{% endif %}</span>
+  {% if r.status == 'Due' %}
+    <form method="post" action="{{ url_for('snooze_med') }}" class="inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="medication_id" value="{{ r.medication_id }}">
+      <input type="hidden" name="slot" value="{{ r.slot }}">
+      <button class="btn btn-outline btn-xs">Snooze 5 min</button>
+    </form>
+  {% endif %}
+  {% if r.status in ['Due', 'Snoozed', 'Missed', 'Upcoming'] %}
+    <form method="post" action="{{ url_for('log_med') }}" class="inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="medication_id" value="{{ r.medication_id }}">
+      <input type="hidden" name="slot" value="{{ r.slot }}">
+      <button name="status" value="Taken" class="btn btn-success btn-xs">Taken</button>
+      <button name="status" value="Skipped" class="btn btn-ghost btn-xs">Skip</button>
+    </form>
+  {% endif %}
+</div>

@@ -1,0 +1,10 @@
+MediKiosk - final project
+=========================
+medikiosk/   the website (Python Flask).  Open medikiosk/README.md and follow section 1.
+n8n/         the n8n workflows to import (see n8n/README.txt).
+docs/        Google Sheet template (Bookings + Doctors tabs) and the project summary.
+
+Fastest start (Windows PowerShell, inside the medikiosk folder):
+  python -m venv venv ; venv\Scripts\activate ; pip install -r requirements.txt
+  Copy-Item .env.example .env       (open .env and fill it in)
+  python app.py

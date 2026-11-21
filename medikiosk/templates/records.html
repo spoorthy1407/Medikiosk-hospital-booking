@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}My records{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Reports, prescriptions &amp; scans</h1></div>
+<div class="grid grid-1-2">
+  <div class="card">
+    <h2>Upload a record</h2>
+    <form method="post" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>Title<input name="title" required placeholder="e.g. Blood test - CBC"></label>
+      <label>Category
+        <select name="category" required>
+          {% for c in categories %}<option>{{ c }}</option>{% endfor %}
+        </select>
+      </label>
+      <label>Report date<input type="date" name="record_date" max="{{ today }}"></label>
+      <label>Notes<textarea name="notes" rows="2" placeholder="Optional"></textarea></label>
+      <label>File (PDF, image, DOC, TXT · max 10 MB)<input type="file" name="file" required
+        accept=".pdf,.png,.jpg,.jpeg,.webp,.gif,.doc,.docx,.txt"></label>
+      <button class="btn btn-primary btn-block">Upload</button>
+    </form>
+  </div>
+  <div>
+    <div class="chips">
+      <a class="chip {{ 'active' if not current }}" href="{{ url_for('records') }}">All</a>
+      {% for c in categories %}<a class="chip {{ 'active' if current == c }}" href="{{ url_for('records', category=c) }}">{{ c }}</a>{% endfor %}
+    </div>
+    {% if records %}
+      <div class="grid grid-2">
+      {% for r in records %}
+        <div class="card record">
+          <span class="pill">{{ r.category }}</span>
+          <h3>{{ r.title }}</h3>
+          <p class="muted small">{{ r.filename }}{% if r.record_date %} · {{ r.record_date }}{% endif %}</p>
+          {% if r.notes %}<p class="small">{{ r.notes }}</p>{% endif %}
+          <div class="actions">
+            <a class="btn btn-outline btn-xs" target="_blank" href="{{ url_for('record_file', record_id=r.id) }}">View</a>
+            <a class="btn btn-ghost btn-xs" href="{{ url_for('record_file', record_id=r.id, download=1) }}">Download</a>
+            {% if r.stored_name.endswith(('.pdf', '.txt')) %}<a class="btn btn-primary btn-xs" href="{{ url_for('analyse_record', record_id=r.id) }}">Analyse</a>{% endif %}
+            <form method="post" action="{{ url_for('delete_record', record_id=r.id) }}" class="inline" onsubmit="return confirm('Delete this record?')">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-danger btn-xs">Delete</button>
+            </form>
+          </div>
+        </div>
+      {% endfor %}
+      </div>
+    {% else %}
+      <div class="card empty center"><p class="muted">No records yet. Upload your first report.</p></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

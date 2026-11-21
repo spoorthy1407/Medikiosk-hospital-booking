@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}{{ p.name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>{{ p.name }}</h1><p class="muted">{{ p.email }} · {{ p.phone }} · {{ p.age or '' }} yrs · {{ p.gender or '' }}</p></div>
+  <div>
+    {% for d in (7, 30, 90) %}<a class="btn btn-{{ 'primary' if d == days else 'outline' }} btn-sm" href="?days={{ d }}">{{ d }} days</a> {% endfor %}
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('staff_patients') }}">← All patients</a>
+  </div>
+</div>
+<div class="grid grid-2">
+  {% include '_adherence.html' %}
+  <div class="card">
+    <h2>Reports &amp; prescriptions</h2>
+    {% if recs %}
+    <ul class="list">
+      {% for r in recs %}
+      <li class="list-item"><div><b>{{ r.title }}</b> <span class="pill">{{ r.category }}</span><br>
+        <span class="muted small">{{ r.record_date or (r.uploaded_at|local_dt) }} {{ ('· ' ~ r.notes) if r.notes else '' }}</span></div>
+        <a class="btn btn-ghost btn-xs" target="_blank" href="{{ url_for('staff_record_file', record_id=r.id) }}">View</a></li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="muted">No files uploaded.</p>{% endif %}
+  </div>
+</div>
+<h2 class="mt">Visits</h2>
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>Date</th><th>Token</th><th>Doctor / Room</th><th>Ward</th><th>Problem</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for a in appts %}
+      <tr>
+        <td class="small">{{ a.appt_date|date_label }}<br>{{ fmt_time(a.start_min) }}</td>
+        <td>#{{ a.token }}{% if a.priority %} <span class="badge badge-urgent">Priority</span>{% endif %}</td>
+        <td>{{ a.doctor_name }}<br><span class="muted small">{{ a.room }}</span></td>
+        <td>{{ a.ward }}</td>
+        <td class="small">{{ a.symptoms }}</td>
+        <td><span class="badge badge-{{ a.status|lower|replace(' ', '') }}">{{ a.status }}</span></td>
+      </tr>
+    {% else %}<tr><td colspan="6" class="muted">No visits yet.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

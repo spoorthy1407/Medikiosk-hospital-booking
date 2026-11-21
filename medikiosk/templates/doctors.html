@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Doctors{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Our doctors</h1></div>
+{% for ward in ['General Ward', 'Emergency Ward', 'Mental Health Ward'] %}
+<h2 class="ward-title">{{ ward }}</h2>
+<div class="grid grid-3">
+  {% for d in doctors if d.ward == ward %}
+  <div class="card doctor">
+    <div class="row-between"><h3>{{ d.name }}</h3><span class="badge badge-{{ d.status|lower|replace(' ', '') }}">{{ d.status }}</span></div>
+    <p class="muted">Room {{ d.room }} · {{ d.shift }}</p>
+    <p class="small">Next free slot today: <b>{{ d.next_free }}</b></p>
+  </div>
+  {% endfor %}
+</div>
+{% endfor %}
+{% endblock %}

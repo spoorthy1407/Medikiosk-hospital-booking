@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Tablet reminders{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Tablet reminders</h1><p class="muted">When a tablet is due you get an <b>alarm</b> on this website (keep any page open) and an <b>email</b>. Tap <b>Taken</b>, <b>Snooze 5 min</b> or <b>Skip</b>. Your weekly score goes up each time you tap Taken.</p></div>
+  <div class="actions"><button class="btn btn-outline" data-enable-sound>Test alarm sound</button>
+  <button class="btn btn-outline" data-enable-notify>Enable desktop alerts</button></div>
+</div>
+<div class="grid grid-1-2">
+  <div class="card">
+    <h2>Add medicine</h2>
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>Medicine name<input name="name" required placeholder="e.g. Paracetamol 500mg"></label>
+      <label>Dosage<input name="dosage" placeholder="e.g. 1 tablet after food"></label>
+      <label>Reminder times</label>
+      <div id="times" class="times">
+        <input type="time" name="times" value="08:00" required>
+      </div>
+      <button type="button" class="btn btn-ghost btn-xs" onclick="MK.addTime()">+ Add another time</button>
+      <div class="grid grid-2">
+        <label>Start date<input type="date" name="start_date" value="{{ today }}" required></label>
+        <label>End date<input type="date" name="end_date" min="{{ today }}"></label>
+      </div>
+      <label>Notes<input name="notes" placeholder="Optional"></label>
+      <button class="btn btn-primary btn-block">Save reminder</button>
+    </form>
+  </div>
+  <div>
+    <div class="card">
+      <h2>Today's schedule</h2>
+      {% if today_items %}
+      <ul class="list">
+        {% for r in today_items %}
+          <li class="list-item">
+            <div><b>{{ r.time }}</b> · {{ r.name }} <span class="muted">{{ r.dosage }}</span></div>
+            {% include '_med_actions.html' %}
+          </li>
+        {% endfor %}
+      </ul>
+      {% else %}<p class="muted">Nothing scheduled today.</p>{% endif %}
+    </div>
+    <div class="mt">{% with adh=week %}{% include '_adherence.html' %}{% endwith %}</div>
+    <div class="mt">{% include '_adherence.html' %}</div>
+    <div class="card mt">
+      <h2>All medicines</h2>
+      {% if meds %}
+      <div class="table-wrap"><table>
+        <thead><tr><th>Medicine</th><th>Times</th><th>Period</th><th></th></tr></thead>
+        <tbody>
+        {% for m in meds %}
+          <tr class="{{ '' if m.active else 'faded' }}">
+            <td><b>{{ m.name }}</b><br><span class="muted small">{{ m.dosage }}</span></td>
+            <td>{{ m.times.split(',')|map('fmt_hhmm')|join(', ') }}</td>
+            <td class="small">{{ m.start_date }} → {{ m.end_date or 'ongoing' }}</td>
+            <td class="actions">
+              <form method="post" action="{{ url_for('toggle_med', med_id=m.id) }}" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-ghost btn-xs">{{ 'Pause' if m.active else 'Resume' }}</button>
+              </form>
+              <form method="post" action="{{ url_for('delete_med', med_id=m.id) }}" class="inline" onsubmit="return confirm('Delete this reminder?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-danger btn-xs">Delete</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table></div>
+      {% else %}<p class="muted">No medicines added yet.</p>{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,9 @@
+venv/
+instance/
+uploads/
+__pycache__/
+*.pyc
+hospital_data.xlsx
+.env
+*service-account*.json
+google-key*.json

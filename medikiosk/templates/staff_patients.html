@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Patients{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Patients</h1><p class="muted">Tablet adherence for the last 30 days. Open a patient to see reports, prescriptions and visits.</p></div>
+  <form method="get" class="inline"><input name="q" value="{{ q }}" placeholder="Search name, email or phone"><button class="btn btn-outline btn-sm">Search</button></form>
+</div>
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>Patient</th><th>Contact</th><th>Last visit</th><th>Records</th><th>Adherence</th><th></th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+      <tr>
+        <td><b>{{ r.p.name }}</b><br><span class="muted small">{{ r.p.age or '' }} yrs {{ r.p.gender or '' }}</span></td>
+        <td class="small">{{ r.p.phone }}<br>{{ r.p.email }}</td>
+        <td class="small">{% if r.last %}{{ r.last.appt_date|date_label }}<br>{{ r.last.ward }}{% else %}–{% endif %}</td>
+        <td>{{ r.records }}</td>
+        <td style="min-width:160px">
+          <div class="adh-row small"><span class="adh-text adh-{{ r.adh.rating|lower|replace(' ', '') }}">{{ r.adh.rating }}</span><b>{{ r.adh.percent if r.adh.percent is not none else '–' }}{% if r.adh.percent is not none %}%{% endif %}</b></div>
+          <div class="bar"><span class="bar-fill adh-{{ r.adh.rating|lower|replace(' ', '') }}" style="width: {{ r.adh.percent or 0 }}%"></span></div>
+        </td>
+        <td><a class="btn btn-ghost btn-xs" href="{{ url_for('staff_patient_detail', patient_id=r.p.id) }}">Open</a></td>
+      </tr>
+    {% else %}
+      <tr><td colspan="6" class="muted">No patients found.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

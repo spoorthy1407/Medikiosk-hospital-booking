@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Appointment #{{ a.token }}{% endblock %}
+{% block content %}
+{% if is_new or a.status == 'Booked' %}
+<div class="pay-banner">
+  <b>&#128179; {{ pay_message }}</b>
+</div>
+{% endif %}
+<div class="card ticket" data-live-appt="{{ a.id }}">
+  <div class="ticket-head">
+    <div>
+      <span class="pill">{{ a.ward }}</span>
+      {% if a.priority %}<span class="badge badge-urgent">PRIORITY – immediate treatment, go to the room now</span>{% endif %}
+      <h1>{{ a.doctor_name }}</h1>
+      <p><b>Patient: {{ a.person_name or g.patient.name }}</b></p>
+      <p class="muted">Assigned automatically · Booked {{ a.created_at|local_dt }}</p>
+    </div>
+    <div class="token big"><small>Your token</small><b>#{{ a.token }}</b></div>
+  </div>
+  <div class="grid grid-4 ticket-grid">
+    <div><small>Room</small><b>{{ a.room }}</b></div>
+    <div><small>Date</small><b>{{ a.appt_date|date_label }}</b></div>
+    <div><small>Expected time</small><b>{{ a.start_min|fmt_time }} – {{ a.end_min|fmt_time }}</b></div>
+    <div><small>Status</small><b><span class="badge" data-field="state">{{ live.state }}</span></b></div>
+    <div><small>Patients ahead</small><b data-field="ahead">{{ live.patients_ahead }}</b></div>
+    <div><small>Estimated wait</small><b data-field="wait_text">{{ live.wait_text }}</b></div>
+    <div><small>Doctor shift</small><b>{{ a.shift_label }}</b></div>
+    <div><small>Your query</small><b class="small">{{ a.symptoms }}</b></div>
+  </div>
+  <div class="row-between mt">
+    <a class="btn btn-outline" href="{{ url_for('queue') }}">See live queue</a>
+    {% if a.status == 'Booked' %}
+    <div class="actions">
+      <span class="badge badge-booked">Still in queue</span>
+      <form method="post" action="{{ url_for('mark_appointment_done', appt_id=a.id) }}" class="inline" onsubmit="return confirm('Mark this appointment as done?')">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-success">Mark appointment as done</button>
+      </form>
+    </div>
+    <form method="post" action="{{ url_for('cancel_appointment', appt_id=a.id) }}" onsubmit="return confirm('Cancel this appointment?')">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-danger">Cancel appointment</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

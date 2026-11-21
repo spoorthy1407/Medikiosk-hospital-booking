@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}OP receipt{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>OP receipt</h1><p class="muted">Type the details shown by the patient, then <b>Print</b> or <b>Download PDF</b>.
+    The last active date is worked out automatically.</p></div>
+  <a class="btn btn-outline" href="{{ url_for('staff_dashboard') }}">Back to Staff desk</a>
+</div>
+<div class="card" style="max-width:760px">
+  <form method="post" id="receipt-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="grid grid-2">
+      <label>Patient Name<input name="patient_name" value="{{ form.get('patient_name', '') }}" required maxlength="80" autofocus></label>
+      <label>Age (years)<input type="number" name="age" value="{{ form.get('age', '') }}" required min="0" max="120"></label>
+      <label>Phone Number<input name="phone" value="{{ form.get('phone', '') }}" required inputmode="tel" pattern="\+?[0-9 ]{10,15}" title="10-13 digits"></label>
+      <label>Date of Appointment<input type="date" id="appt_date" name="appt_date" value="{{ form.get('appt_date', today_iso) }}" required></label>
+      <label>Weight (kg)<input type="number" name="weight" value="{{ form.get('weight', '') }}" required min="0.5" max="300" step="0.1"></label>
+      <label>Blood Pressure (mmHg)<input name="bp" value="{{ form.get('bp', '') }}" required placeholder="e.g. 120/80" pattern="\s*\d{2,3}\s*/\s*\d{2,3}\s*" title="Format 120/80"></label>
+      <label>Appointment Number<input name="appt_no" value="{{ form.get('appt_no', '') }}" required maxlength="20" placeholder="e.g. 3"></label>
+    </div>
+    <div class="alert alert-warning mt" id="validity">
+      <b>OP will be active up to {{ valid_days }} days</b><br>
+      Last active date of the OP: <b id="last-active">–</b>
+    </div>
+    <div class="actions mt">
+      <button class="btn btn-primary" formaction="{{ url_for('staff_receipt_print') }}" formtarget="_blank">Print</button>
+      <button class="btn btn-success" formaction="{{ url_for('staff_receipt_pdf') }}">Download PDF</button>
+      <button type="reset" class="btn btn-ghost" id="clear-btn">Clear</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  (function () {
+    var DAYS = {{ valid_days }};
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var input = document.getElementById('appt_date'), out = document.getElementById('last-active');
+    function update() {
+      var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(input.value);
+      if (!m) { out.textContent = '–'; return; }
+      var d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3] + DAYS));
+      out.textContent = ('0' + d.getUTCDate()).slice(-2) + ' ' + months[d.getUTCMonth()] + ' ' + d.getUTCFullYear();
+    }
+    input.addEventListener('input', update);
+    input.addEventListener('change', update);
+    document.getElementById('clear-btn').addEventListener('click', function () { setTimeout(function () {
+      document.querySelectorAll('#receipt-form input:not([type=hidden])').forEach(function (el) { if (el.id !== 'appt_date') { el.value = ''; } });
+      update(); }, 0); });
+    update();
+  })();
+</script>
+{% endblock %}

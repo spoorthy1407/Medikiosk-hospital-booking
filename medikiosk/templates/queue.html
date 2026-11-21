@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Live queue{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Live queue</h1><p class="muted">Updates automatically every 10 seconds · Last update <b id="q-time">–</b></p></div>
+  <div class="legend"><span class="dot dot-free"></span>Free <span class="dot dot-consulting"></span>Consulting <span class="dot dot-off"></span>Off duty</div>
+</div>
+<div id="queue-board" class="grid grid-3"><div class="card muted">Loading...</div></div>
+{% endblock %}
+{% block scripts %}<script>MK.startQueueBoard();</script>{% endblock %}

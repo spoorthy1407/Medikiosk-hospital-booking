@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Hello, {{ g.patient.name.split(' ')[0] }}</h1>
+    <p class="muted">{{ g.patient.email }} · {{ g.patient.phone }} · {{ g.patient.age }} yrs · {{ g.patient.gender }}</p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('book') }}">+ Book appointment</a>
+</div>
+
+<div class="grid grid-3">
+  <a class="card tile" href="{{ url_for('appointments') }}"><b>{{ counts.appointments }}</b><span>Appointments</span></a>
+  <a class="card tile" href="{{ url_for('records') }}"><b>{{ counts.records }}</b><span>Reports &amp; prescriptions</span></a>
+  <a class="card tile" href="{{ url_for('reminders') }}"><b>{{ counts.medications }}</b><span>Active tablet reminders</span></a>
+</div>
+
+<div class="mt">{% include '_adherence.html' %}</div>
+
+<div class="grid grid-2 mt">
+  <div class="card">
+    <h2>Next appointment</h2>
+    {% if upcoming %}
+      <div class="token-box" data-live-appt="{{ upcoming.id }}">
+        <div class="token"><small>Token</small><b>#{{ upcoming.token }}</b></div>
+        <div class="token-info">
+          <p><b>{{ upcoming.doctor_name }}</b> · {{ upcoming.ward }} · for {{ upcoming.person_name or g.patient.name }}</p>
+          <p>Room <b>{{ upcoming.room }}</b> · {{ upcoming.appt_date|date_label }} at <b>{{ upcoming.start_min|fmt_time }}</b></p>
+          <p><span class="badge" data-field="state">{{ live.state }}</span>
+             <span data-field="ahead">{{ live.patients_ahead }}</span> patient(s) ahead
+             {% if live.wait_min is not none %}· ~<span data-field="wait">{{ live.wait_min }}</span> min{% endif %}</p>
+        </div>
+      </div>
+      <a class="btn btn-outline btn-sm" href="{{ url_for('appointment_detail', appt_id=upcoming.id) }}">View details</a>
+    {% else %}
+      <p class="muted">No upcoming appointment.</p>
+      <a class="btn btn-primary btn-sm" href="{{ url_for('book') }}">Book now</a>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <div class="row-between"><h2>Today's tablets</h2><button class="btn btn-ghost btn-sm" data-enable-notify>Enable alerts</button></div>
+    {% if reminders %}
+      <ul class="list">
+        {% for r in reminders %}
+          <li class="list-item">
+            <div><b>{{ r.time }}</b> · {{ r.name }} <span class="muted">{{ r.dosage }}</span></div>
+            {% include '_med_actions.html' %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">No tablets scheduled for today.</p>
+      <a class="btn btn-outline btn-sm" href="{{ url_for('reminders') }}">Add a reminder</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

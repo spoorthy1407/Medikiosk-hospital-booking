@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block title %}MediKiosk{% endblock %} · Neelima Hospital</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body data-logged-in="{{ '1' if g.patient else '0' }}">
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a class="brand" href="{{ url_for('index') }}">
+        <span class="brand-mark">+</span>
+        <span><strong>MediKiosk</strong><small>Neelima Hospital</small></span>
+      </a>
+      <button class="nav-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">&#9776;</button>
+      <nav class="nav">
+        <a href="{{ url_for('queue') }}">Live Queue</a>
+        <a href="{{ url_for('doctors') }}">Doctors</a>
+        {% if g.patient %}
+          <a href="{{ url_for('dashboard') }}">Dashboard</a>
+          <a href="{{ url_for('book') }}">Book</a>
+          <a href="{{ url_for('appointments') }}">Appointments</a>
+          <a href="{{ url_for('records') }}">Records</a>
+          <a href="{{ url_for('reminders') }}">Reminders</a>
+          <form method="post" action="{{ url_for('logout') }}" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-ghost btn-sm">Logout</button>
+          </form>
+        {% elif g.staff %}
+          <a href="{{ url_for('staff_dashboard') }}">Staff Desk</a>
+          <a href="{{ url_for('staff_patients') }}">Patients</a>
+          <a href="{{ url_for('staff_doctors') }}">Doctors</a>
+          <a href="{{ url_for('staff_receipt') }}">Receipt</a>
+          <form method="post" action="{{ url_for('logout') }}" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-ghost btn-sm">Logout</button>
+          </form>
+        {% else %}
+          <a href="{{ url_for('login') }}">Login</a>
+          <a class="btn btn-primary btn-sm" href="{{ url_for('signup') }}">Sign up</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <main class="container main">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flashes">
+          {% for cat, msg in messages %}<div class="alert alert-{{ cat }}">{{ msg }}</div>{% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <div class="container">MediKiosk · AI-powered virtual receptionist · Neelima Hospital ·
+      <a href="{{ url_for('staff_login') }}">Staff login</a></div>
+  </footer>
+
+  <div id="toasts" class="toasts"></div>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

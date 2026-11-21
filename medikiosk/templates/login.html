@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="card auth-card">
+    <h1>Patient login</h1>
+    <p class="muted">Welcome back. Log in to book and manage your care.</p>
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>Email<input type="email" name="email" required value="{{ email }}" autofocus></label>
+      <label>Password<input type="password" name="password" required></label>
+      <button class="btn btn-primary btn-block">Log in</button>
+    </form>
+    <p class="muted center">New here? <a href="{{ url_for('signup') }}">Create an account</a></p>
+  </div>
+</div>
+{% endblock %}

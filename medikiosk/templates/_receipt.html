@@ -1,0 +1,18 @@
+{# Printable OP receipt. Needs r (cleaned data), fmt (date formatter) and hospital #}
+<div class="receipt">
+  <div class="receipt-head"><h2>{{ hospital|upper }}</h2><p>OP RECEIPT</p></div>
+  <table class="receipt-table">
+    <tr><th>Patient Name</th><td>{{ r.patient_name }}</td></tr>
+    <tr><th>Age</th><td>{{ r.age }} yrs</td></tr>
+    <tr><th>Phone Number</th><td>{{ r.phone }}</td></tr>
+    <tr><th>Date of Appointment</th><td>{{ fmt(r.appt_date) }}</td></tr>
+    <tr><th>Weight</th><td>{{ r.weight }} kg</td></tr>
+    <tr><th>Blood Pressure</th><td>{{ r.bp }} mmHg</td></tr>
+    <tr><th>Appointment Number</th><td>#{{ r.appt_no }}</td></tr>
+  </table>
+  <div class="receipt-valid">
+    <b>OP will be active up to {{ r.valid_days }} days</b>
+    <span>Last active date of the OP: <b>{{ fmt(r.last_active) }}</b></span>
+  </div>
+  <div class="receipt-foot"><span>Receptionist signature: ____________________</span></div>
+</div>

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Staff login{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="card auth-card">
+    <h1>Staff / reception login</h1>
+    <p class="muted">Manage doctor availability and today's queue.</p>
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>Username<input name="username" required autofocus></label>
+      <label>Password<input type="password" name="password" required></label>
+      <button class="btn btn-primary btn-block">Log in</button>
+    </form>
+    <p class="muted center small">Default: <code>admin</code> / <code>admin123</code> (change with STAFF_USERNAME / STAFF_PASSWORD before first run)</p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Report check{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Report check</h1><p class="muted">{{ rec.title }} · {{ rec.filename }}</p></div>
+  <a class="btn btn-outline" href="{{ url_for('records') }}">Back to records</a></div>
+<div class="card" style="background:#fffbeb;border-color:#fde68a">
+  <b>This is not a diagnosis.</b> It only compares values found in your report with typical adult ranges.
+  Labs print their own ranges, so trust the range on your report and ask your doctor about any result.
+</div>
+{% if reason %}
+  <div class="card mt"><p>{{ reason }}</p></div>
+{% elif not results %}
+  <div class="card mt"><p>No common lab values (blood count, sugar, cholesterol, thyroid, kidney, liver, vitamins) were found in this file.</p></div>
+{% else %}
+  <div class="card table-wrap mt">
+    <table>
+      <thead><tr><th>Test</th><th>Your value</th><th>Typical range</th><th>Result</th><th>Found in report as</th></tr></thead>
+      <tbody>
+      {% for r in results %}
+        <tr><td><b>{{ r.label }}</b></td>
+          <td>{{ '%g'|format(r.value) }} {{ r.unit }}</td>
+          <td>{{ r.range }}</td>
+          <td><span class="badge {{ 'badge-free' if r.flag == 'Normal' else 'badge-consulting' }}">{{ r.flag }}</span></td>
+          <td class="small muted">{{ r.line }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted small mt">Check the last column against your report: the reader can pick up the wrong number if the report layout is unusual.</p>
+{% endif %}
+{% endblock %}

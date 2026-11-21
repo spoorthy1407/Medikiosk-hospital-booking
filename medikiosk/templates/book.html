@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}Book appointment{% endblock %}
+{% block content %}
+<div class="grid grid-2-1">
+  <div class="card">
+    <h1>Book an appointment</h1>
+    <p class="muted">Describe why you are visiting. Our AI assigns the right ward and the earliest free doctor.
+      You can book for up to <b>{{ max_rows }}</b> people at a time (for example yourself and your children).
+      Active appointments: <b>{{ active }}</b> · you can book <b>{{ left }}</b> more.</p>
+    {% if left == 0 %}
+      <div class="alert alert-warning">You already have {{ max_rows }} active appointments. Mark one as done or cancel it to book another.</div>
+    {% else %}
+    <form method="post" id="book-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {% for i in range(1, max_rows + 1) %}
+      {% set nm = form.get('person_name_' ~ i, g.patient.name if i == 1 else '') %}
+      {% set sy = form.get('symptoms_' ~ i, '') %}
+      <div class="person-row card soft" data-row="{{ i }}" {% if i > 1 and not (nm or sy) %}style="display:none"{% endif %}>
+        <h3>Patient {{ i }}{% if i == 1 %} <span class="muted small">(you can change the name if the visit is for someone else)</span>{% endif %}</h3>
+        <label>Patient name
+          <input name="person_name_{{ i }}" value="{{ nm }}" maxlength="80" placeholder="Full name"
+                 {% if i > left %}disabled{% endif %}>
+        </label>
+        <label>What is the problem?
+          <textarea name="symptoms_{{ i }}" rows="3" minlength="5" {% if i > left %}disabled{% endif %}
+            placeholder="e.g. cough and cold since 2 days with mild fever">{{ sy }}</textarea>
+        </label>
+        {% if i > 1 %}<button type="button" class="btn btn-ghost btn-xs" data-remove="{{ i }}">Remove this patient</button>{% endif %}
+      </div>
+      {% endfor %}
+      {% if left > 1 %}
+      <button type="button" class="btn btn-outline btn-sm" id="add-person">+ Add another patient</button>
+      {% endif %}
+      <label class="mt">Preferred date
+        <input type="date" name="appt_date" value="{{ day }}" min="{{ today }}" max="{{ max_day }}" required>
+      </label>
+      <button class="btn btn-primary btn-block btn-lg" id="book-btn">Find doctor &amp; book</button>
+    </form>
+    {% endif %}
+  </div>
+  <aside class="card soft">
+    <h3>How we assign</h3>
+    <ul class="bullets">
+      <li><b>General Ward</b> – fever, cough, cold, pain, check-ups.</li>
+      <li><b>Emergency Ward</b> – chest pain, breathing trouble, accidents, bleeding. Any free doctor is assigned immediately.</li>
+      <li><b>Mental Health Ward</b> – stress, anxiety, sleep problems, low mood.</li>
+    </ul>
+    <p class="muted small">Each consultation slot is 15 minutes. If no doctor is free on your date, we book the next earliest slot.</p>
+    <div class="alert alert-danger small">In a life-threatening emergency go directly to the Emergency counter or call 108.</div>
+  </aside>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  var form = document.getElementById('book-form');
+  if (form) {
+    var rows = form.querySelectorAll('.person-row');
+    var left = {{ left }};
+    function visibleCount() { return Array.prototype.filter.call(rows, function (r) { return r.style.display !== 'none'; }).length; }
+    function refresh() {
+      var add = document.getElementById('add-person');
+      if (add) { add.style.display = (visibleCount() >= left) ? 'none' : ''; }
+      rows.forEach(function (r) {
+        var on = r.style.display !== 'none';
+        r.querySelectorAll('input, textarea').forEach(function (el) { el.disabled = !on; });
+      });
+    }
+    var add = document.getElementById('add-person');
+    if (add) { add.onclick = function () {
+      for (var i = 0; i < rows.length; i++) { if (rows[i].style.display === 'none') { rows[i].style.display = ''; break; } }
+      refresh();
+    }; }
+    form.querySelectorAll('[data-remove]').forEach(function (b) {
+      b.onclick = function () {
+        var row = form.querySelector('[data-row="' + b.dataset.remove + '"]');
+        row.style.display = 'none';
+        row.querySelectorAll('input, textarea').forEach(function (el) { el.value = ''; });
+        refresh();
+      };
+    });
+    refresh();
+    form.addEventListener('submit', function () {
+      var btn = document.getElementById('book-btn'); btn.disabled = true; btn.textContent = 'Analysing your query...';
+    });
+  }
+</script>
+{% endblock %}

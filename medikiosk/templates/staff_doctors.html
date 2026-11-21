@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Doctor availability{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Doctor availability &amp; hours</h1>
+    <p class="muted">Change when a doctor is available. Saving updates the website bookings <b>and</b> the Excel file on this PC
+      (<span class="small">{{ excel_path }}</span>).</p></div>
+  <a class="btn btn-outline" href="{{ url_for('staff_dashboard') }}">Back to Staff desk</a>
+</div>
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>Doctor</th><th>Ward / Room</th><th>Now</th><th>Available for appointments</th><th>Start time</th><th>End time</th><th></th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+      <tr>
+          <td><b>{{ r.d.name }}</b>
+            <form id="f{{ r.d.id }}" method="post" action="{{ url_for('staff_update_doctor', doctor_id=r.d.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"></form></td>
+          <td>{{ r.d.ward }}<br><span class="muted small">{{ r.d.room }}</span></td>
+          <td><span class="badge badge-{{ r.live.status|lower|replace(' ', '') }}">{{ r.live.status }}</span><br>
+              <span class="muted small">{{ r.d.shift_label }}</span></td>
+          <td>
+            <select name="available" form="f{{ r.d.id }}">
+              <option value="1" {{ 'selected' if not r.d.on_leave }}>Available</option>
+              <option value="0" {{ 'selected' if r.d.on_leave }}>Unavailable (leave)</option>
+            </select>
+          </td>
+          <td><input type="time" name="shift_start" form="f{{ r.d.id }}" value="{{ r.start }}" required></td>
+          <td><input type="time" name="shift_end" form="f{{ r.d.id }}" value="{{ r.end }}" required></td>
+          <td><button class="btn btn-primary btn-xs" form="f{{ r.d.id }}">Save</button></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+<p class="muted small mt">Shifts run within one day (start before end; end 12:00 AM means midnight). Existing bookings are not moved automatically -
+  you will get a warning if some fall outside the new hours.</p>
+{% endblock %}

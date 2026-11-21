@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<section class="hero">
+  <div>
+    <span class="pill">AI virtual receptionist</span>
+    <h1>Skip the queue.<br>See the right doctor, faster.</h1>
+    <p class="lead">Tell us your problem in your own words. MediKiosk picks the right ward, assigns a free doctor,
+      gives you a token, room number and estimated time &mdash; and keeps your reports and tablet reminders in one place.</p>
+    <div class="hero-actions">
+      {% if g.patient %}
+        <a class="btn btn-primary btn-lg" href="{{ url_for('book') }}">Book an appointment</a>
+        <a class="btn btn-outline btn-lg" href="{{ url_for('dashboard') }}">My dashboard</a>
+      {% else %}
+        <a class="btn btn-primary btn-lg" href="{{ url_for('signup') }}">Create free account</a>
+        <a class="btn btn-outline btn-lg" href="{{ url_for('login') }}">Login</a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="hero-card card">
+    <h3>Right now at the hospital</h3>
+    <div class="stat-row">
+      <div class="stat"><b class="c-green">{{ stats.free }}</b><span>Doctors free</span></div>
+      <div class="stat"><b class="c-amber">{{ stats.consulting }}</b><span>Consulting</span></div>
+      <div class="stat"><b class="c-blue">{{ stats.waiting }}</b><span>In queue</span></div>
+    </div>
+    <a class="btn btn-outline btn-block" href="{{ url_for('queue') }}">Open live queue &rarr;</a>
+  </div>
+</section>
+
+<section class="grid grid-4 features">
+  <div class="card feature"><div class="icon">&#129658;</div><h3>Smart booking</h3><p>AI reads your symptoms and sends you to General, Emergency or Mental Health ward.</p></div>
+  <div class="card feature"><div class="icon">&#9201;</div><h3>Live queue</h3><p>See your token, patients ahead of you and estimated time, updated every few seconds.</p></div>
+  <div class="card feature"><div class="icon">&#128193;</div><h3>Health records</h3><p>Store lab reports, prescriptions and scans safely in your own account.</p></div>
+  <div class="card feature"><div class="icon">&#128138;</div><h3>Tablet reminders</h3><p>Get alerts when it is time to take your medicine, and track every dose.</p></div>
+</section>
+
+<section class="card steps">
+  <h2>How it works</h2>
+  <ol class="step-list">
+    <li><b>Sign up</b><span>Create your patient account once.</span></li>
+    <li><b>Describe your problem</b><span>"Cough and cold since 2 days".</span></li>
+    <li><b>AI assigns ward + doctor</b><span>Based on live availability.</span></li>
+    <li><b>Get token &amp; time</b><span>Room number and estimated time.</span></li>
+    <li><b>Pay at counter</b><span>Collect your receipt and wait for your turn.</span></li>
+  </ol>
+</section>
+{% endblock %}

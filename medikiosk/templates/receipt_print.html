@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Print receipt{% endblock %}
+{% block content %}
+<div class="no-print page-head">
+  <div><h1>OP receipt</h1><p class="muted">The print window opens automatically. If it does not, click Print.</p></div>
+  <div class="actions">
+    <button class="btn btn-primary" onclick="window.print()">Print</button>
+    <button class="btn btn-outline" onclick="window.close()">Close</button>
+  </div>
+</div>
+{% include '_receipt.html' %}
+{% endblock %}
+{% block scripts %}<script>window.addEventListener('load', function () { setTimeout(function () { window.print(); }, 400); });</script>{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}My appointments{% endblock %}
+{% block content %}
+<div class="page-head"><h1>My appointments</h1><a class="btn btn-primary" href="{{ url_for('book') }}">+ New booking</a></div>
+{% if is_new %}<div class="pay-banner"><b>&#128179; {{ pay_message }}</b></div>{% endif %}
+{% if appointments %}
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>Patient</th><th>Token</th><th>Date &amp; time</th><th>Doctor</th><th>Ward / Room</th><th>Status</th><th>Done?</th><th></th></tr></thead>
+    <tbody>
+    {% for a in appointments %}
+      <tr>
+        <td><b>{{ a.person_name or g.patient.name }}</b></td>
+        <td><b>#{{ a.token }}</b></td>
+        <td>{{ a.appt_date|date_label }}<br><span class="muted">{{ a.start_min|fmt_time }}</span></td>
+        <td>{{ a.doctor_name }}</td>
+        <td>{{ a.ward }}<br><span class="muted">{{ a.room }}</span></td>
+        <td><span class="badge badge-{{ a.status|lower|replace(' ', '') }}">{{ a.status }}</span></td>
+        <td>{% if a.status == 'Booked' %}
+          <span class="muted small">Still in queue</span>
+          <form method="post" action="{{ url_for('mark_appointment_done', appt_id=a.id) }}" class="inline" onsubmit="return confirm('Mark this appointment as done?')">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-success btn-xs">Mark as done</button>
+          </form>
+        {% elif a.status == 'Completed' %}<span class="badge badge-completed">Done</span>
+        {% else %}<span class="muted small">–</span>{% endif %}</td>
+        <td><a class="btn btn-outline btn-xs" href="{{ url_for('appointment_detail', appt_id=a.id) }}">Open</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card empty center"><p>You have no appointments yet.</p><a class="btn btn-primary" href="{{ url_for('book') }}">Book your first appointment</a></div>
+{% endif %}
+{% endblock %}

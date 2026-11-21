@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Staff desk{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Reception desk</h1>
+    <p class="muted">{% if n8n_visible %}n8n AI triage: <b>{{ status.triage }}</b><br>
+      n8n emails + sheet: <b>{{ status.notify }}</b><br>{% else %}Appointment e-mails: <b>{{ status.booking_email }}</b><br>{% endif %}
+      {% if sheet_on and not n8n_visible %}Google Sheet log: <b>{{ status.sheet }}</b><br>{% endif %}
+      Tablet e-mail reminders: <b>{{ status.email }}</b>
+      <form method="post" action="{{ url_for('staff_test_email') }}" class="inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input name="to" type="email" placeholder="send a test e-mail to..." required style="width:220px">
+        <button class="btn btn-outline btn-xs">Send test e-mail</button>
+      </form><br>
+      Excel file on this PC: <b>{{ status.excel }}</b> <span class="small">({{ excel_path }})</span></p></div>
+  <form method="get" class="inline">
+    <input type="date" name="day" value="{{ day }}" onchange="this.form.submit()">
+    <a class="btn btn-outline btn-sm" href="{{ url_for('staff_export_xlsx') }}">Download Excel</a>
+    <a class="btn btn-outline btn-sm" href="{{ url_for('staff_export', day=day) }}">Export CSV</a>
+  </form>
+</div>
+
+<h2>Doctors – live status</h2>
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>Doctor</th><th>Ward / Room</th><th>Shift</th><th>Status</th><th>Serving</th><th>Waiting</th><th>Next free</th><th></th></tr></thead>
+    <tbody>
+    {% for d in doctors %}
+      <tr>
+        <td><b>{{ d.name }}</b></td>
+        <td>{{ d.ward }}<br><span class="muted">{{ d.room }}</span></td>
+        <td class="small">{{ d.shift }}</td>
+        <td><span class="badge badge-{{ d.status|lower|replace(' ', '') }}">{{ d.status }}</span>
+          {% if d.busy_until %}<br><span class="muted small">until {{ d.busy_until }}</span>{% endif %}</td>
+        <td>{{ '#' ~ d.now_serving if d.now_serving else '–' }}</td>
+        <td>{{ d.waiting_count }}</td>
+        <td class="small">{{ d.next_free }}</td>
+        <td>
+          <form method="post" action="{{ url_for('staff_toggle_leave', doctor_id=d.id) }}" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-ghost btn-xs">{{ 'Back on duty' if leave[d.id] else 'Mark on leave' }}</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<h2 class="mt">Appointments – {{ day|date_label }}</h2>
+{% if appts %}
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>Time</th><th>Token</th><th>Doctor / Room</th><th>Patient</th><th>Query</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+    {% for a in appts %}
+      <tr>
+        <td>{{ a.start_min|fmt_time }}</td>
+        <td><b>#{{ a.token }}</b></td>
+        <td>{{ a.doctor_name }}<br><span class="muted">{{ a.room }}</span></td>
+        <td>{{ a.patient_name }}<br><span class="muted">{{ a.phone }}</span></td>
+        <td class="small">{{ a.symptoms }}<br><span class="muted">{{ a.ward }}{% if n8n_visible %} · {{ a.triage_source }}{% endif %}</span></td>
+        <td><span class="badge badge-{{ a.status|lower|replace(' ', '') }}">{{ a.status }}</span></td>
+        <td class="actions">
+          {% if a.status == 'Booked' %}
+          {% for action, label, cls in [('complete', 'Done', 'btn-success'), ('noshow', 'No show', 'btn-ghost'), ('cancel', 'Cancel', 'btn-danger')] %}
+            <form method="post" action="{{ url_for('staff_appt_action', appt_id=a.id, action=action) }}" class="inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn {{ cls }} btn-xs">{{ label }}</button>
+            </form>
+          {% endfor %}
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card empty center"><p class="muted">No appointments for this day.</p></div>
+{% endif %}
+{% endblock %}
